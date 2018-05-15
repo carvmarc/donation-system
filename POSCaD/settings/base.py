@@ -29,7 +29,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '.compute-1.amazonaws.com', # allows viewing of instances directly
     '.elasticbeanstalk.com',
-    '*.amigosdapoli.com.br'
+    'doe.amigosdapoli.com.br',
+    'doehomolog.amigosdapoli.com.br'
 ]
 
 
