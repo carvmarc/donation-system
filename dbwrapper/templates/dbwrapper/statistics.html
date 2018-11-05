@@ -1,4 +1,4 @@
-{%  load recaptcha2 %}
+{% load recaptcha2 %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,17 +8,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">{% load static %}
     <link rel="stylesheet" href="{% static  "css/style.css" %}">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 
     <!-- http://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#1-bar-chart -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
 
     <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
         ga('create', '{{ GOOGLE_ANALYTICS_PROPERTY_ID }}', 'auto');
         ga('send', 'pageview');
@@ -29,103 +31,126 @@
 <body>
     <div class="header">
         <div class="wrapper">
-            <img src="/static/images/logo.png" alt="" class="header__logo"/>
-            <h1 class="header__title">Acompanhe o resultado da campanha Dia de Doar</h1>
+            <img src="/static/images/logo.png" alt="" class="header__logo" />
+            <h1 class="header__title">Acompanhe o resultado da campanha Mês de Doar 2018</h1>
         </div>
     </div>
     <center>
-    <div align="center" class="donation-form">
-        <h2>Resultados consolidados</h2>
-        <h4 align="left">Meta = 800 doadores<sup>1</sup></h4>
-        <canvas id="bar-chart-horizontal-total" height="50px"></canvas>
-        <script>
-            new Chart(document.getElementById("bar-chart-horizontal-total"), {
-                type: 'horizontalBar',
-                data: {
-                  labels: ["Total"],
-                  datasets: [
-                    {
-                      label: "Doadores",
-                      backgroundColor: "#3e95cd",
-                      data: ["{{ total }}".replace('.','')]
-                    }
-                  ]
-                },
-                options: {
-                  legend: { display: false },
-                  title: {
-                    display: true,
-                    text: 'Total de doadores durante o Mês de Doar'
-                  },
-                  scales: {
-                    xAxes: [{
-                        display: true,
-                        labelString: 'Número de doadores',
-                        ticks: {
-                            beginAtZero:true,
-                            stepSize: 200,
-                            min: 0,
-                            max: 1400,
-                            callback: function(value, index, values) {
-                              if(parseInt(value) >= 1000){
-                                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                              } else {
-                                return value;
-                              }
+        <div align="center" class="donation-form">
+            <h2>Resultados consolidados</h2>
+            <!-- <h4 align="left">Meta = 800 doadores<sup>1</sup></h4> -->
+            <canvas id="bar-chart-horizontal-total" height="50px"></canvas>
+            <script>
+                new Chart(document.getElementById("bar-chart-horizontal-total"), {
+                    type: 'horizontalBar',
+                    data: {
+                        labels: ["Total"],
+                        datasets: [
+                            {
+                                label: "Doadores",
+                                backgroundColor: "#3e95cd",
+                                data: ["{{ total }}".replace('.', '')]
                             }
+                        ]
+                    },
+                    options: {
+                        legend: { display: false },
+                        responsive: true,
+                        title: {
+                            display: true,
+                            text: 'Total de doadores do Mês de Doar'
+                        },
+                        scales: {
+                            xAxes: [{
+                                display: true,
+                                labelString: 'Número de doadores',
+                                ticks: {
+                                    beginAtZero: true,
+                                    stepSize: 200,
+                                    min: 0,
+                                    max: 1300,
+                                    callback: function (value, index, values) {
+                                        if (parseInt(value) >= 1000) {
+                                            return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                        } else {
+                                            return value;
+                                        }
+                                    }
+                                }
+                            }],
+                            yAxes: [{
+                                barPercentage: 1.0,
+                                categoryPercentage: 1.0,
+                            }]
                         }
-                    }],
-                    yAxes: [{
-                        barPercentage: 1.0,
-                        categoryPercentage: 1.0,
-                    }]
-                  }
-                }
-            });
-        </script>
-        <h2>Grupos de alunos apoiadores da campanha</h2>
-        <canvas id="bar-chart-horizontal"></canvas>
-        <script>
-            new Chart(document.getElementById("bar-chart-horizontal"), {
-                type: 'horizontalBar',
-                data: {
-                  labels: {% autoescape on %}
-                             {{ labels|safe }}
-                          {% endautoescape %},
-                  datasets: [
-                    {
-                      label: "Doadores",
-                      backgroundColor: "#3e95cd",
-                      data: {{ data }}
                     }
-                  ]
+                });
+            </script>
+            <h2>Grupos apoiadores da campanha</h2>
+            <canvas id="bar-chart-horizontal"></canvas>
+            <script>
+                var myChart = new Chart(document.getElementById("bar-chart-horizontal"), {
+                    type: 'horizontalBar',
+                    data: {
+                        labels: {% autoescape on %}
+                             {{ labels| safe }}
+                {% endautoescape %},
+                datasets: [
+                    {
+                        label: "% das metas atingidas",
+                        backgroundColor: "#3e95cd",
+                        data: {{ data_percentage }},
+                    }
+                ]
                 },
                 options: {
-                  legend: { display: false },
-                  title: {
-                    display: true,
-                    text: 'Doadores Mês de Doar'
-                  },
-                  scales: {
-                    xAxes: [{
+                    legend: { display: false },
+                    responsive: true,
+                        animation: {
+                        duration: 1,
+                            onComplete: function() {
+                                var chartInstance = this.chart,
+                                    ctx = chartInstance.ctx;
+
+                                ctx.font = Chart.helpers.fontString( Chart.defaults.global.defaultFontSize+3, 
+                                'bold', Chart.defaults.global.defaultFontFamily);
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+
+                                var meta = chartInstance.controller.getDatasetMeta(0);
+                                meta.data.forEach(function (bar, index) {
+                                    var data = {{data_flat}}[index];
+                                    ctx.fillText(data, bar._model.x + 10, bar._model.y );
+                                });
+                            }
+                    },
+                    title: {
                         display: true,
-                        scaleLabel:{
+                            text: '% das metas atingidas'
+                    },
+                    scales: {
+                        xAxes: [{
                             display: true,
-                            labelString: 'Número de doadores',
-                        },
-                        ticks: {
-                            beginAtZero:true,
-                            stepSize: 20,
-                            min: 0,
-                            max: {{ x_axis_max }}
-                        }
-                    }]
+                            scaleLabel: {
+                                display: false,
+                                labelString: 'Percentual atingido %',
+                            },
+                            ticks: {
+                                beginAtZero: true,
+                                stepSize: 10,
+                                min: 0,
+                                max: {{ x_axis_max_percentage }}
+                }
+                    }
+                    ]
                   }
                 }
             });
-        </script>
-        <i><p align="left"><sup>1</sup>: doadores com doação de 5 reais ou mais.</p></i>
-    </div>
+            </script>
+            <i>
+                <p align="left"> doadores com doação acima de 5 reais.</p>
+            </i>
+        </div>
     </center>
     <footer>
 

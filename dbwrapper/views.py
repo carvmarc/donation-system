@@ -10,6 +10,7 @@ from dbwrapper.actions import DonationProcess
 
 from datetime import date
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -141,21 +142,72 @@ class StatisticsView(View):
             campaign_name="None").exclude(
             campaign_name="none").exclude(
             campaign_group="None").filter(
-            campaign_name="dia-de-doar").filter(
+            campaign_name="dia-de-doar-2018").filter(
             donation_value__gte=5.0).filter(
             created_at__month='11').values('campaign_group').annotate(donor_count=Count('donor_tax_id', distinct=True)).order_by('-donor_count')
         logger.info(queryset)
 
         labels = []
-        data = []
+        data_percentage = []
+        data_flat = []
+        metas = {
+            'AEQ':70,
+            'CAEA':60,
+            'CAEP':50,
+            'CAM':60,
+            'CAPS':60,
+            'CEE':150,
+            'CEC':80,
+            'CEN':60,
+            'CMR':90,
+            'AAAP':150,
+            'GREMIOPOLITECNICO':150,
+            'POLIJR':80,
+            'GEAR':200,
+            'POLIFINANCE':40,
+            'POLICONSULTING':40,
+            'POLISOCIAL':40,
+            'IPOLI':40,
+            'GRUPOTURING':40,
+            'ENGENHEIROSSEMFRONTEIRAS':40,
+            'COLABORADORESBAIN':30,
+            'COLABORADORESMCKINSEY ':20,
+            'COLABORADORESBCG':20,
+            'COLABORADORESINTEGRATION':15,
+            'COLABORADORESACCENTURE':15,
+            'COLABORADORESVISAGIO':15,
+            'BRAZILFOUNDATION':90,
+            'VETERANOS':100
+        }
+
+        brFoundation = 60
+        brFoundationAdded = False
 
         if not queryset:
-            data = [0] # avoid graph from breaking
+            data_percentage = [0] # avoid graph from breaking
+            data_flat = [0]
         else:
             for row in queryset:
-                labels.append(row["campaign_group"].replace('-', ' ').replace('_', ' ').title())
-                data.append(row["donor_count"])
-
+                if row["donor_count"] < brFoundation and not brFoundationAdded:
+                    label =  'Brazil Foundation'
+                    count = brFoundation
+                    brFoundationAdded = True
+                    meta = metas.get(str.upper(label.replace(' ', '')))
+                    if meta:
+                        labels.append(label)
+                        data_percentage.append(round(count/meta*100,2))
+                        data_flat.append(count)
+                
+                label = row["campaign_group"].replace('-', ' ').replace('_', ' ').title()
+                count = row["donor_count"]
+                meta = metas.get(str.upper(label.replace(' ', '')))
+                if meta:
+                        labels.append(label)
+                        data_percentage.append(round(count/meta*100,2))
+                        data_flat.append(count)
+            
+            
+                
         email_to_exclude = '@yopmail.com'
         total_qs = Donation.objects.exclude(
             donor__email__endswith=email_to_exclude).exclude(
@@ -163,17 +215,20 @@ class StatisticsView(View):
             donor__surname__icontains='aquino').exclude(
             donor__name__icontains='nome').filter(
             was_captured=True).filter(
+            campaign_name="dia-de-doar-2018").filter(
             donation_value__gte=5.0).filter(
             created_at__month='11').aggregate(Count('donor_tax_id', distinct=True))
 
-        base_donors = 95
+        base_donors = brFoundation
         total = base_donors + total_qs['donor_tax_id__count']
         logger.info(total)
 
         template_data = {"total": total,
                          "labels": labels,
-                         "data": data,
-                         "x_axis_max": max(data)+1}
+                         "data_percentage": data_percentage,
+                         "data_flat": data_flat,
+                         "x_axis_max_percentage": max(100,math.ceil(max(data_percentage))),
+                         "x_axis_max_flat": math.ceil(max(data_flat))}
         logger.info(template_data)
 
 
